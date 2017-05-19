@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<title>Computação Gráfica</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div>
+            GRUPO:
+            Daniel				62
+            Igor Carvalho		62
+            Leonardo Zaccarias	620491
+		</div>
+
+		<script src="js/three.min.js"></script>
+	    <script src="js/OBJLoader.js"></script>
+	    <script src="js/MTLLoader.js"></script>
+
+		<script>
+			var camera, scene, renderer;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//camera
+				camera = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.z = 2000;
+
+				//cena
+				scene = new THREE.Scene();
+
+				//ambiente
+				var ambient = new THREE.AmbientLight( 0x101030 );
+				scene.add( ambient );
+
+				//luz
+				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+				directionalLight.position.set( 0, 0, 1 );
+				scene.add( directionalLight );
+
+				// objeto
+				var loader = new THREE.OBJLoader();
+				loader.load(
+					'objetos/Chair.obj',
+
+					function ( object ) {
+						object.position.x = - 60;
+	                    object.rotation.x = 35;
+	                    object.rotation.z = 35;
+	                    object.scale.x = 40;
+	                    object.scale.y = 40;
+	                    object.scale.z = 40;
+	                    obj = object
+						scene.add( obj );
+					}
+				);
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {				
+				camera.lookAt( scene.position );
+				renderer.render( scene, camera );
+			}
+		</script>
+	</body>
+</html>
+
