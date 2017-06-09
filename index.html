@@ -17,7 +17,7 @@
 	        <script src="js/MTLLoader.js"></script>
 		<script>
 			var camera, scene, renderer;
-			
+
 			init();
 			animate();
 
@@ -108,6 +108,7 @@
 				container.appendChild( renderer.domElement );
 				document.addEventListener( 'click', onDocumentMouseClick, false );
 				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				
 			}
 
 			function animate() {
@@ -118,11 +119,14 @@
 			function render() {				
 				camera.lookAt( scene.position );
 				renderer.render( scene, camera );
+				var timer = new Date().getTime() * 0.0010;
+				obj2.position.x = Math.floor(Math.cos( timer ) * 200);
+                                obj2.position.z = Math.floor(Math.sin( timer ) * 200);
 			}
 
 			function onDocumentMouseMove( event ) {
 				obj1.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0).makeRotationX(Math.PI/20));
-				obj2.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0).makeRotationZ(Math.PI/20));
+				obj3.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI/10));
 			}
 			function onDocumentMouseClick( event ) {
 				camera = camera2;
@@ -130,4 +134,3 @@
 		</script>
 	</body>
 </html>
-
