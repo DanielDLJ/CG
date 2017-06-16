@@ -42,9 +42,32 @@
 				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
 				directionalLight.position.set( 0, 0, 1 );
 				scene.add( directionalLight );
+				
+				// texture
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+					console.log( item, loaded, total );
+				};
+				var texture = new THREE.Texture();
+				var texture2 = new THREE.Texture();
+				var loader2 = new THREE.ImageLoader( manager );
+				loader2.load( 'Texture/statue01.jpg', function ( image ) {
+					texture.image = image;
+					texture.needsUpdate = true;
+				} );
+				var loader5 = new THREE.ImageLoader( manager );
+				loader5.load( 'Texture/box.jpg', function ( image ) {
+					texture2.image = image;
+					texture2.needsUpdate = true;
+				} );
 
 				// objeto
 				var loader = new THREE.OBJLoader();
+				
+				//var texture1 = loader.load( 'objetos/crate_grey8.tga' );
+				//var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture1 } );
+				//var mesh1 = new THREE.Mesh( geometry, material1 );
+				
 				loader.load('objetos/chair.obj',
 					function ( object ) {
 						object.position.x = - 500;
@@ -58,21 +81,23 @@
 						scene.add( obj1 );
 					}
 				);
-				var loader2 = new THREE.OBJLoader();
-				loader2.load('objetos/statue.obj',
-					function ( object ) {
-						object.position.x = + 500;
-						//object.position.y = + 100;
-	                                        object.rotation.x = 50;
-	                                        object.rotation.y = 1;
-	                                        object.scale.x = 35;
-	                                        object.scale.y = 35;
-	                                        object.scale.z = 35;
-	                                        object.scale.z = 35;
-	                                        obj2 = object
+				var loader2 = new THREE.OBJLoader( manager );
+				loader2.load( 'objetos/statue.obj', function ( object ) {
+				    object.position.x = + 500;
+					object.rotation.x = 50;
+					object.rotation.y = 1;
+					object.scale.x = 35;
+					object.scale.y = 35;
+					object.scale.z = 35;
+					//obj2 = object;
+				    object.traverse( function ( child ) {
+					  if ( child instanceof THREE.Mesh ) {
+							child.material.map = texture;
+						}
+						obj2 = object;
 						scene.add( obj2 );
-					}
-				);	
+					});
+				});
 				var loader3 = new THREE.OBJLoader();
 				loader3.load('objetos/cat.obj',
 					function ( object ) {
@@ -86,6 +111,7 @@
 	                                        object.scale.z = 10;
 	                                        obj3 = object
 						scene.add( obj3 );
+					
 					}
 				);
 				var loader4 = new THREE.OBJLoader();
@@ -103,6 +129,19 @@
 						scene.add( obj4 );
 					}
 				);
+				
+				var geometry = new THREE.BoxGeometry( 50, 50, 50 );
+				var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture2 } );
+				var mesh1 = new THREE.Mesh( geometry, material1 );
+					mesh1.position.x = + 500;
+					mesh1.rotation.x = 50;
+					mesh1.rotation.y = 1;
+					mesh1.scale.x = 3;
+					mesh1.scale.y = 3;
+					mesh1.scale.z = 3;
+				scene.add( mesh1 );
+				
+				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
