@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="pt-br">
+	<head>
+		<title>Computação Gráfica</title>
+		<meta charset="utf-8">
+	</head>
+
+	 <html>
+	<body>
+		<div>
+
+		<font color="#FFFFF", background="#000000">
+		GRUPO: <br />
+		 
+                  Daniel Leme Junior  &emsp;&emsp;  725805  <br />
+                  Igor Carvalho	      &emsp;&emsp;&emsp;&emsp;&nbsp; 725804 <br />
+                  Leonardo Zaccarias  &emsp;&emsp;  620491 <br />
+                   </font>
+		</div>
+
+		<script src="js/three.min.js"></script>
+	        <script src="js/OBJLoader.js"></script>
+	        <script src="js/MTLLoader.js"></script>
+		<script>
+			var camera, scene, renderer;
+
+			init();
+			animate();
+
+			function init() {
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//camera
+				camera = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera2 = new THREE.PerspectiveCamera( 100, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.z = 1500;
+				camera2.position.z = 1000;
+
+				//cena
+				scene = new THREE.Scene();
+
+				//ambiente
+				var ambient = new THREE.AmbientLight( 0x101030 );
+				scene.add( ambient );
+
+				//luz
+				var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+				directionalLight.position.set( 0, 0, 1 );
+				scene.add( directionalLight );
+				
+				// texture
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+					console.log( item, loaded, total );
+				};
+				var texture = new THREE.Texture();
+				var texture1 = new THREE.Texture();
+
+
+				var loader2 = new THREE.ImageLoader( manager );
+				loader2.load( 'Texture/moon-normal.jpg', function ( image ) {
+					texture.image = image;
+					texture.needsUpdate = true;
+				} );
+				
+				var loader5 = new THREE.ImageLoader( manager );
+				loader5.load( 'Texture/MoonMap2_2500x1250.jpg', function ( image ) {
+					texture.image = image;
+					texture.needsUpdate = true;
+				} );
+
+				// objeto
+				
+				
+				var texture1 = loader2.load( 'objetos/crate_grey8.tga' );
+				var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture1 } );
+				var mesh1 = new THREE.Mesh( geometry, material1 );
+
+				
+				var loader1 = new THREE.OBJLoader();
+				loader1.load('objetos/Realistic_earth.obj',
+					function ( object ) {
+						 object.position.x = -200;
+				    object.position.y = 0;
+				    object.position.z = -500;
+					object.rotation.x = 50;
+					object.rotation.y = 1;
+					object.scale.x = 100;
+					object.scale.y = 100;
+					object.scale.z = 100;	                                        
+					obj1 = object
+					scene.add( obj1 );
+					}
+				);
+				
+				
+				var loader5 = new THREE.OBJLoader();
+				loader5.load('objetos/moon.obj',
+					function ( object ) {
+					object.position.x = -200;
+				    object.position.y = 0;
+				    object.position.z = -500;
+					object.rotation.x = 50;
+					object.rotation.y = 1;
+					object.scale.x = 100;
+					object.scale.y = 100;
+					object.scale.z = 100;	                                        
+					obj5 = object;
+				    //object.traverse( function ( child ) {
+					  //if ( child instanceof THREE.Mesh ) {
+						//	child.material.map = texture;
+						//}
+						//obj2 = object;
+						scene.add( obj5 );
+					//});
+				});
+				
+				
+				
+				var loader2 = new THREE.OBJLoader( manager );
+				loader2.load( 'objetos/Realistic_earth.obj', function ( object ) {
+				    object.position.x = -200;
+				    object.position.y = 0;
+				    object.position.z = -900;
+					object.rotation.x = 50;
+					object.rotation.y = 1;
+					object.scale.x = 100;
+					object.scale.y = 100;
+					object.scale.z = 100;
+					obj2 = object;
+				    //object.traverse( function ( child ) {
+					  //if ( child instanceof THREE.Mesh ) {
+						//	child.material.map = texture;
+						//}
+						//obj2 = object;
+						scene.add( obj2 );
+					//});
+				});
+
+				var loader3 = new THREE.OBJLoader( manager );
+				loader2.load( 'objetos/Realistic_earth.obj', function ( object ) {
+				    object.position.x = -200;
+				    object.position.y = 0;
+				    object.position.z = -500;
+					object.rotation.x = 50;
+					object.rotation.y = 1;
+					object.scale.x = 100;
+					object.scale.y = 100;
+					object.scale.z = 100;
+					//obj2 = object;
+				    //object.traverse( function ( child ) {
+					  //if ( child instanceof THREE.Mesh ) {
+						//	child.material.map = texture;
+						//}
+						obj3 = object;
+						scene.add( obj3 );
+					//});
+				});
+				var loader4 = new THREE.OBJLoader();
+				loader4.load('objetos/moon.obj',
+					function ( object ) {
+						object.position.x = 0;
+						object.position.y = 0;
+	                                        object.rotation.x = 0;
+	                                        object.rotation.y = 0;
+						object.rotation.z = 0;
+	                                        object.scale.x = 6;
+	                                        object.scale.y = 6;
+	                                        object.scale.z = 6;
+	                                        obj4 = object
+						scene.add( obj4 );
+					}
+				);
+				
+
+				///* ------------------ BOX --------------------------
+				var geometry = new THREE.BoxGeometry( 50, 50, 50 );
+				var material1 = new THREE.MeshPhongMaterial( { color: 0xffffff, map: texture } );
+				var mesh1 = new THREE.Mesh( geometry, material1 );
+					mesh1.position.x = + 500;
+					mesh1.rotation.x = 50;
+					mesh1.rotation.y = 1;
+					mesh1.scale.x = 3;
+					mesh1.scale.y = 3;
+					mesh1.scale.z = 3;
+				//scene.add( mesh1 );
+				
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+				document.addEventListener( 'click', onDocumentMouseClick, false );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+				
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {				
+				camera.lookAt( scene.position );
+				renderer.render( scene, camera );
+				var timerTerra = new Date().getTime() * 0.0013;
+				var timerMercurio =  new Date().getTime() * 0.0010;
+				var timerVenus = new Date().getTime() * 0.0011;
+				var timerLua = new Date().getTime() * 0.0012;
+
+				
+				obj1.position.x = Math.floor(Math.cos( timerVenus ) * 700);
+                obj1.position.z = Math.floor(Math.sin( timerVenus ) * 600);
+
+				obj2.position.x = Math.floor(Math.cos( timerTerra ) * 800);
+                obj2.position.z = Math.floor(Math.sin( timerTerra ) * 700);
+
+                obj5.position.x = Math.floor(Math.cos( timerLua ) * 700);
+                obj5.position.z = Math.floor(Math.sin( timerLua ) * 650);
+
+                obj3.position.x = Math.floor(Math.cos( timerMercurio ) * 450);
+                obj3.position.z = Math.floor(Math.sin( timerMercurio ) * 500);
+			}
+
+			function onDocumentMouseMove( event ) {
+				//obj1.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0).makeRotationX(Math.PI/20));
+				//obj3.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI/10));
+			}
+			function onDocumentMouseClick( event ) {
+				//camera = camera2;
+			}
+		</script>
+	</body>
+</html>
