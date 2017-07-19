@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+	<head>
+		<title>Computação Gráfica</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+		<div>
+		  GRUPO: <br />
+                  Daniel Leme Junior  &emsp;&emsp;  725805 <br />
+                  Igor Carvalho	      &emsp;&emsp;&emsp;&emsp;&nbsp; 725804 <br />
+                  Leonardo Zaccarias  &emsp;&emsp;  620491 <br />
+		</div>
+
+		<script src="js/three.min.js"></script>
+	        <script src="js/OBJLoader.js"></script>
+	        <script src="js/MTLLoader.js"></script>
+		<script>
+			var camera, scene, renderer;
+
+			init();
+			animate();
+
+			function init() {
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				//variaveis
+				var esfera = new THREE.SphereGeometry( 40, 50, 50 );
+				flag = 0;
+				dPlanetas = 300; //distancia base entre as orbitas
+
+				//tamanho dos planetas
+				escalaMerc = 1;
+				escalaVenus = 2,48;
+				escalaTerra = 2,62;
+				escalaMarte = 1,39;
+				escalaJupiter = 4;
+				escalaSat = 3,37;
+				escalaUrano = 2,79;
+				escalaNet = 2,7;
+				escalaSol= 5;
+
+				//rotações
+				rotacaoMerc = 1/58,65;
+				rotacaoVenus = 1/243;
+				rotacaoTerra = 1;
+				rotacaoMarte = 1,02;
+				rotacaoJupiter = 9,84/24;
+				rotacaoSat = 10,23/24;
+				rotacaoUrano = 17,2/24;
+				rotacaoNet = 17,2/24;
+
+				//translações
+				transMerc = 88/365;
+				transVenus = 225/365;
+				transTerra = 1
+				transMarte = 1 + 322/365;
+				transJupiter = 11 + 315/365
+				transSat = 29 + 167/365;
+				transUrano = 87 + 7/365;
+				transNet = 164 + 280/365;
+
+				//camera
+				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.z = 4000;
+
+				//cena
+				scene = new THREE.Scene();
+
+				//ambiente
+				var ambient = new THREE.AmbientLight( 0x101030 );
+				scene.add( ambient );
+
+				//luz
+				var luz = new THREE.PointLight();
+				luz.position.set( 0, 0, 0 );
+				scene.add( luz );
+				
+				//Manager do loader
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+					console.log( item, loaded, total );
+				};
+				//loader das imagens
+				var loader = new THREE.ImageLoader( manager );
+
+				// sol
+				//textura
+				var textureSol = new THREE.Texture();
+				loader.load( 'Texture/1sol.jpg', function ( image ) {
+					textureSol.image = image;
+					textureSol.needsUpdate = true;
+				} );
+				// objeto
+				var materialSol = new THREE.MeshBasicMaterial( { color: 0xffffff, map: textureSol } );
+				var sol = new THREE.Mesh( esfera, materialSol );
+					sol.position.x = 0;
+					sol.scale.x = escalaSol;
+					sol.scale.y = escalaSol;
+					sol.scale.z = escalaSol;
+				scene.add( sol );
+				
+				// MERCURIO
+				//textura
+				var textureMerc = new THREE.Texture();
+				loader.load( 'Texture/2mercurio.jpg', function ( image ) {
+					textureMerc.image = image;
+					textureMerc.needsUpdate = true;
+				} );
+				// objeto
+				var materialMerc = new THREE.MeshPhongMaterial( { color: 0xeeeeee, map: textureMerc } );
+				mercurio = new THREE.Mesh( esfera, materialMerc );
+					mercurio.position.x = 2*dPlanetas;
+					mercurio.scale.x = escalaMerc;
+					mercurio.scale.y = escalaMerc;
+					mercurio.scale.z = escalaMerc;
+				scene.add( mercurio );
+				
+				//venus
+				//textura
+				var textureVenus = new THREE.Texture();
+				loader.load( 'Texture/3venus.jpg', function ( image ) {
+					textureVenus.image = image;
+					textureVenus.needsUpdate = true;
+				} );
+				// objeto
+				var materialVenus = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureVenus } );
+				venus = new THREE.Mesh( esfera, materialVenus );
+					venus.position.x = 3*dPlanetas;
+					venus.scale.x = escalaVenus;
+					venus.scale.y = escalaVenus;
+					venus.scale.z = escalaVenus;
+				scene.add( venus );
+				
+				//TERRA
+				//textura
+				var textureTerra = new THREE.Texture();
+				loader.load( 'Texture/4terra.jpg', function ( image ) {
+					textureTerra.image = image;
+					textureTerra.needsUpdate = true;
+				} );
+				// objeto
+				var materialTerra = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureTerra } );
+				terra = new THREE.Mesh( esfera, materialTerra );
+					terra.position.x = 4*dPlanetas;
+					terra.scale.x = escalaTerra;
+					terra.scale.y = escalaTerra;
+					terra.scale.z = escalaTerra;
+				scene.add( terra );
+				
+				//MARTE
+				//textura
+				var textureMarte = new THREE.Texture();
+				loader.load( 'Texture/5marte.jpg', function ( image ) {
+					textureMarte.image = image;
+					textureMarte.needsUpdate = true;
+				} );
+				// objeto
+				var materialMarte = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureMarte } );
+				marte = new THREE.Mesh( esfera, materialMarte );
+					marte.position.x = 5*dPlanetas;
+					marte.scale.x = escalaMarte;
+					marte.scale.y = escalaMarte;
+					marte.scale.z = escalaMarte;
+				scene.add( marte );
+				
+				//JUPITER
+				//textura
+				var textureJupiter = new THREE.Texture();
+				loader.load( 'Texture/6jupiter.jpg', function ( image ) {
+					textureJupiter.image = image;
+					textureJupiter.needsUpdate = true;
+				} );
+				// objeto
+				var materialJupiter = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureJupiter } );
+				jupiter = new THREE.Mesh( esfera, materialJupiter );
+					jupiter.position.x = 6*dPlanetas;
+					jupiter.scale.x = escalaJupiter;
+					jupiter.scale.y = escalaJupiter;
+					jupiter.scale.z = escalaJupiter;
+				scene.add( jupiter );				
+				
+				//SATURNO
+				//textura
+				var textureSat = new THREE.Texture();
+				loader.load( 'Texture/7saturno.jpg', function ( image ) {
+					textureSat.image = image;
+					textureSat.needsUpdate = true;
+				} );
+				// objeto
+				var materialSat = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureSat } );
+				saturno = new THREE.Mesh( esfera, materialSat );
+					saturno.position.x = 7*dPlanetas;
+					saturno.scale.x = escalaSat;
+					saturno.scale.y = escalaSat;
+					saturno.scale.z = escalaSat;
+				scene.add( saturno );
+
+				//URANO
+				//textura
+				var textureUrano = new THREE.Texture();
+				loader.load( 'Texture/8urano.jpg', function ( image ) {
+					textureUrano.image = image;
+					textureUrano.needsUpdate = true;
+				} );
+				// objeto
+				var materialUrano = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureUrano } );
+				urano = new THREE.Mesh( esfera, materialUrano );
+					urano.position.x = 8*dPlanetas;
+					urano.scale.x = escalaUrano;
+					urano.scale.y = escalaUrano;
+					urano.scale.z = escalaUrano;
+				scene.add( urano );
+								
+				//NETUNO
+				//textura
+				var textureNet = new THREE.Texture();
+				loader.load( 'Texture/9netuno.jpg', function ( image ) {
+					textureNet.image = image;
+					textureNet.needsUpdate = true;
+				} );
+				// objeto
+				var materialNet = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
+				netuno = new THREE.Mesh( esfera, materialNet );
+					netuno.position.x = 9*dPlanetas;
+					netuno.scale.x = escalaNet;
+					netuno.scale.y = escalaNet;
+					netuno.scale.z = escalaNet;
+				scene.add( netuno );				
+				
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+				document.addEventListener( 'click', onDocumentMouseClick, false );
+				document.addEventListener( 'mousemove', onDocumentMouseMove, false );				
+			}
+
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+			}
+
+			function render() {				
+				camera.lookAt( scene.position );
+				renderer.render( scene, camera );
+				var timer = new Date().getTime() / 4000;
+
+				//Rotações
+				mercurio.rotation.y = rotacaoMerc*timer;
+				venus.rotation.y = rotacaoVenus*timer;
+				terra.rotation.y = rotacaoTerra*timer;
+				marte.rotation.y = rotacaoMarte*timer;
+				jupiter.rotation.y = rotacaoJupiter*timer;
+				saturno.rotation.y = rotacaoSat*timer;
+				urano.rotation.x = rotacaoUrano*timer;
+				netuno.rotation.y = rotacaoNet*timer;
+
+				//translações
+				if (flag == 1){
+				timer = new Date().getTime() * 0.0013;
+				mercurio.position.z = Math.floor(Math.cos( timer / transMerc ) * dPlanetas * 2 );
+				mercurio.position.x = Math.floor(Math.sin( timer / transMerc ) * dPlanetas * 2 );
+				venus.position.z = Math.floor(Math.cos( timer / transVenus ) * dPlanetas * 3 );
+				venus.position.x = Math.floor(Math.sin( timer / transVenus ) * dPlanetas * 3 );
+				terra.position.z = Math.floor(Math.cos( timer / transTerra ) * dPlanetas * 4 );
+				terra.position.x = Math.floor(Math.sin( timer / transTerra ) * dPlanetas * 4 );
+				marte.position.z = Math.floor(Math.cos( timer / transMarte ) * dPlanetas * 5 );
+				marte.position.x = Math.floor(Math.sin( timer / transMarte ) * dPlanetas * 5 );
+				jupiter.position.z = Math.floor(Math.cos( timer / transJupiter ) * dPlanetas * 6 );
+				jupiter.position.x = Math.floor(Math.sin( timer / transJupiter ) * dPlanetas * 6 );
+				saturno.position.z = Math.floor(Math.cos( timer / transSat ) * dPlanetas * 7 );
+				saturno.position.x = Math.floor(Math.sin( timer / transSat ) * dPlanetas * 7 );
+				urano.position.z = Math.floor(Math.cos( timer / transUrano ) * dPlanetas * 8 );
+				urano.position.x = Math.floor(Math.sin( timer / transUrano ) * dPlanetas * 8 );
+				netuno.position.z = Math.floor(Math.cos( timer / transNet ) * dPlanetas * 9 );
+				netuno.position.x = Math.floor(Math.sin( timer / transNet ) * dPlanetas * 9 );
+				}
+			}
+
+			function onDocumentMouseMove( event ) {
+				//obj1.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0).makeRotationX(Math.PI/20));
+				//obj3.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI/10));
+			}
+			function onDocumentMouseClick( event ) {
+				flag = 1;
+				if (camera.position.z == 6000){
+					camera.position.z = 0;
+					camera.position.y = 6000;
+				}
+				else {
+					camera.position.y = 0;
+					camera.position.z = 6000;
+				}
+			}
+		</script>
+	</body>
+</html>
