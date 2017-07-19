@@ -105,6 +105,7 @@
 				//variaveis
 				var esfera = new THREE.SphereGeometry( 40, 50, 50 );
 				flag = 0;
+				cliques = 0;
 				dPlanetas = 300; //distancia base entre as orbitas
 
 				//tamanho dos planetas
@@ -454,14 +455,24 @@
 			}
 			function onDocumentMouseClick( event ) {
 				flag = 1;
-				if (camera.position.z == 6000){
+				
+				if (cliques == 0)
+				{
 					camera.position.z = 0;
 					camera.position.y = 6000;
 				}
-				else {
+				else if (cliques == 1)
+				{
 					camera.position.y = 0;
 					camera.position.z = 6000;
 				}
+				else
+				{
+					camera.position.z = 0;
+					camera.position.y = -750;
+					cliques = -1;
+				}
+				cliques++;
 			}
 		</script>
 	</body>
