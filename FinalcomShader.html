@@ -117,6 +117,7 @@
 				escalaUrano = 2,79;
 				escalaNet = 2,7;
 				escalaSol= 5;
+				escalaStl = 4;
 
 				//rotações
 				rotacaoMerc = 1/58,65;
@@ -127,6 +128,7 @@
 				rotacaoSat = 10,23/24;
 				rotacaoUrano = 17,2/24;
 				rotacaoNet = 17,2/24;
+				rotacaoStl = 5;
 
 				//translações
 				transMerc = 88/365;
@@ -137,6 +139,7 @@
 				transSat = 29 + 167/365;
 				transUrano = 87 + 7/365;
 				transNet = 164 + 280/365;
+				transStl = 5;
 
 				//camera
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -151,7 +154,7 @@
 
 				//luz
 				var luz = new THREE.PointLight();
-				luz.position.set( 0, 0, 0 );
+				luz.position.set( 100000, 100000, 100000 );
 				scene.add( luz );
 				
 				//Manager do loader
@@ -364,7 +367,32 @@
 					netuno.scale.x = escalaNet;
 					netuno.scale.y = escalaNet;
 					netuno.scale.z = escalaNet;
-				scene.add( netuno );				
+				scene.add( netuno );
+				
+				//SATÉLITE
+				//textura
+				var textureStl = new THREE.Texture();
+				loader.load( 'Texture/satelite.jpg', function ( image ) {
+					textureStl.image = image;
+					textureStl.needsUpdate = true;
+				} );
+
+				//objeto				
+				var materialStl = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
+				var loaderOBJ = new THREE.OBJLoader( manager );
+				loaderOBJ.load( 'objetos/Grunt2.obj',
+					function ( object ) {
+				    object.position.x = terra.position.x -100;
+				    object.position.y = terra.position.y +100;
+				    object.position.z = terra.position.z -100;
+					object.rotation.x = terra.rotation.x;
+					object.rotation.y = terra.position.y;
+					object.scale.x = 200;
+					object.scale.y = 200;
+					object.scale.z = 200;
+					satelite = object;
+					scene.add( satelite );
+				});
 				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -394,6 +422,7 @@
 				saturno.rotation.y = rotacaoSat*timer;
 				urano.rotation.x = rotacaoUrano*timer;
 				netuno.rotation.y = rotacaoNet*timer;
+				//satelite.rotation.y = rotacaoStl*timer;
 
 				//translações
 				if (flag == 1){
@@ -414,6 +443,8 @@
 				urano.position.x = Math.floor(Math.sin( timer / transUrano ) * dPlanetas * 8 );
 				netuno.position.z = Math.floor(Math.cos( timer / transNet ) * dPlanetas * 9 );
 				netuno.position.x = Math.floor(Math.sin( timer / transNet ) * dPlanetas * 9 );
+				//satelite.position.z = Math.floor(Math.cos( timer / transStl ) * dPlanetas * 5 );
+				//satelite.position.x = Math.floor(Math.sin( timer / transStl ) * dPlanetas * 5 );
 				}
 			}
 
