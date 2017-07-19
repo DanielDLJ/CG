@@ -117,7 +117,7 @@
 				escalaUrano = 2,79;
 				escalaNet = 2,7;
 				escalaSol= 5;
-				escalaStl = 4;
+				//escalaStl = 4;
 
 				//rotações
 				rotacaoMerc = 1/58,65;
@@ -128,7 +128,7 @@
 				rotacaoSat = 10,23/24;
 				rotacaoUrano = 17,2/24;
 				rotacaoNet = 17,2/24;
-				rotacaoStl = 5;
+				//rotacaoStl = 5;
 
 				//translações
 				transMerc = 88/365;
@@ -139,7 +139,7 @@
 				transSat = 29 + 167/365;
 				transUrano = 87 + 7/365;
 				transNet = 164 + 280/365;
-				transStl = 5;
+				//transStl = 5;
 
 				//camera
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -368,7 +368,7 @@
 					netuno.scale.y = escalaNet;
 					netuno.scale.z = escalaNet;
 				scene.add( netuno );
-				
+				/*
 				//SATÉLITE
 				//textura
 				var textureStl = new THREE.Texture();
@@ -393,7 +393,7 @@
 					satelite = object;
 					scene.add( satelite );
 				});
-				
+				*/
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
