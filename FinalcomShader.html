@@ -395,6 +395,29 @@
 					scene.add( satelite );
 				});
 				*/
+				
+				//METEORO
+				//textura
+				var textureMeteoro = new THREE.Texture();
+				loader.load( 'Texture/Meteor.jpg', function ( image ) {
+					textureMeteoro.image = image;
+					textureMeteoro.needsUpdate = true;
+				} );
+				//objeto				
+				var materialMeteoro = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
+				var loaderOBJmeteoro = new THREE.OBJLoader( manager );
+				loaderOBJmeteoro.load( 'objetos/meteor.obj',
+					function ( object ) {
+				    object.position.x = 2000;
+				    object.position.y = 100;
+				    object.position.z = -2000;
+					object.scale.x = 10;
+					object.scale.y = 10;
+					object.scale.z = 10;
+					meteoro = object;
+					scene.add( meteoro );
+				});
+				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
