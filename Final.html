@@ -15,9 +15,86 @@
 		<script src="js/three.min.js"></script>
 	        <script src="js/OBJLoader.js"></script>
 	        <script src="js/MTLLoader.js"></script>
+			
+
+			
+			<!-- ---------------- Custom Shader Code ------------------------ -->
+			<script id="vertexShader" type="x-shader/x-vertex">
+				uniform sampler2D noiseTexture;
+				uniform float noiseScale;
+
+				uniform sampler2D bumpTexture;
+				uniform float bumpSpeed;
+				uniform float bumpScale;
+
+				uniform float time;
+
+				varying vec2 vUv;
+
+				void main() 
+				{ 
+					vUv = uv;
+					
+					vec2 uvTimeShift = vUv + vec2( 1.1, 1.9 ) * time * bumpSpeed;
+					vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+					vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.g );
+					// below, using uvTimeShift seems to result in more of a "rippling" effect
+					//   while uvNoiseTimeShift seems to result in more of a "shivering" effect
+					vec4 bumpData = texture2D( bumpTexture, uvNoiseTimeShift );
+
+					// move the position along the normal
+					//  but displace the vertices at the poles by the same amount
+					float displacement = ( vUv.y > 0.999 || vUv.y < 0.001 ) ? 
+						bumpScale * (0.3 + 0.02 * sin(time)) :  
+						bumpScale * bumpData.r;
+					vec3 newPosition = position + normal * displacement;
+					
+					gl_Position = projectionMatrix * modelViewMatrix * vec4( newPosition, 1.0 );
+				}
+			</script>
+
+			<!-- fragment shader a.k.a. pixel shader -->
+				<script id="fragmentShader" type="x-shader/x-vertex"> 
+				uniform sampler2D baseTexture;
+				uniform float baseSpeed;
+				uniform float repeatS;
+				uniform float repeatT;
+
+				uniform sampler2D noiseTexture;
+				uniform float noiseScale;
+
+				uniform sampler2D blendTexture;
+				uniform float blendSpeed;
+				uniform float blendOffset;
+
+				uniform float time;
+				uniform float alpha;
+
+				varying vec2 vUv;
+
+				void main() 
+				{
+					vec2 uvTimeShift = vUv + vec2( -0.7, 1.5 ) * time * baseSpeed;	
+					vec4 noiseGeneratorTimeShift = texture2D( noiseTexture, uvTimeShift );
+					vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.b );
+					vec4 baseColor = texture2D( baseTexture, uvNoiseTimeShift * vec2(repeatS, repeatT) );
+
+					vec2 uvTimeShift2 = vUv + vec2( 1.3, -1.7 ) * time * blendSpeed;	
+					vec4 noiseGeneratorTimeShift2 = texture2D( noiseTexture, uvTimeShift2 );
+					vec2 uvNoiseTimeShift2 = vUv + noiseScale * vec2( noiseGeneratorTimeShift2.g, noiseGeneratorTimeShift2.b );
+					vec4 blendColor = texture2D( blendTexture, uvNoiseTimeShift2 * vec2(repeatS, repeatT) ) - blendOffset * vec4(1.0, 1.0, 1.0, 1.0);
+
+					vec4 theColor = baseColor + blendColor;
+					theColor.a = alpha;
+					gl_FragColor = theColor;
+				}  
+				</script>
+			<!-- ----------------------------------------------------------- -->
+			
+			
 		<script>
 			var camera, scene, renderer;
-
+			var clock = new THREE.Clock();
 			init();
 			animate();
 
@@ -28,6 +105,7 @@
 				//variaveis
 				var esfera = new THREE.SphereGeometry( 40, 50, 50 );
 				flag = 0;
+				cliques = 0;
 				dPlanetas = 300; //distancia base entre as orbitas
 
 				//tamanho dos planetas
@@ -40,6 +118,8 @@
 				escalaUrano = 2,79;
 				escalaNet = 2,7;
 				escalaSol= 5;
+				//escalaStl = 4;
+				//escalaMet = ;
 
 				//rotações
 				rotacaoMerc = 1/58,65;
@@ -82,20 +162,73 @@
 				manager.onProgress = function ( item, loaded, total ) {
 					console.log( item, loaded, total );
 				};
-				//loader das imagens
-				var loader = new THREE.ImageLoader( manager );
+				//loaders
+				var imageLoader = new THREE.ImageLoader( manager );
+				var objLoader = new THREE.OBJLoader();
 
 				// sol
 				//textura
-				var textureSol = new THREE.Texture();
-				loader.load( 'Texture/1sol.jpg', function ( image ) {
-					textureSol.image = image;
-					textureSol.needsUpdate = true;
-				} );
-				// objeto
-				var materialSol = new THREE.MeshBasicMaterial( { color: 0xffffff, map: textureSol } );
-				var sol = new THREE.Mesh( esfera, materialSol );
-					sol.position.x = 0;
+				
+				// base image texture for mesh
+				var lavaTexture = new THREE.ImageUtils.loadTexture( 'Texture/lava.jpg');
+				lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping; 
+				// multiplier for distortion speed 		
+				var baseSpeed = 0.02;
+				// number of times to repeat texture in each direction
+				var repeatS = repeatT = 4.0;
+				
+				// texture used to generate "randomness", distort all other textures
+				var noiseTexture = new THREE.ImageUtils.loadTexture( 'Texture/cloud.png' );
+				noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping; 
+				// magnitude of noise effect
+				var noiseScale = 0.5;
+				
+				// texture to additively blend with base image texture
+				var blendTexture = new THREE.ImageUtils.loadTexture( 'Texture/lava.jpg' );
+				blendTexture.wrapS = blendTexture.wrapT = THREE.RepeatWrapping; 
+				// multiplier for distortion speed 
+				var blendSpeed = 0.01;
+				// adjust lightness/darkness of blended texture
+				var blendOffset = 0.25;
+
+				// texture to determine normal displacement
+				var bumpTexture = noiseTexture;
+				bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping; 
+				// multiplier for distortion speed 		
+				var bumpSpeed   = 0.15;
+				// magnitude of normal displacement
+				var bumpScale   = 40.0;
+				
+				// use "this." to create global object
+				this.customUniforms = {
+					baseTexture: 	{ type: "t", value: lavaTexture },
+					baseSpeed:		{ type: "f", value: baseSpeed },
+					repeatS:		{ type: "f", value: repeatS },
+					repeatT:		{ type: "f", value: repeatT },
+					noiseTexture:	{ type: "t", value: noiseTexture },
+					noiseScale:		{ type: "f", value: noiseScale },
+					blendTexture:	{ type: "t", value: blendTexture },
+					blendSpeed: 	{ type: "f", value: blendSpeed },
+					blendOffset: 	{ type: "f", value: blendOffset },
+					bumpTexture:	{ type: "t", value: bumpTexture },
+					bumpSpeed: 		{ type: "f", value: bumpSpeed },
+					bumpScale: 		{ type: "f", value: bumpScale },
+					alpha: 			{ type: "f", value: 1.0 },
+					time: 			{ type: "f", value: 1.0 }
+				};
+				
+				// create custom material from the shader code above
+				//   that is within specially labeled script tags
+				var customMaterial = new THREE.ShaderMaterial( 
+				{
+					uniforms: customUniforms,
+					vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
+					fragmentShader: document.getElementById( 'fragmentShader' ).textContent
+				}   );
+								
+				//objeto
+				var sol = new THREE.Mesh( esfera, customMaterial );
+					sol.rotation.y = 5.5;
 					sol.scale.x = escalaSol;
 					sol.scale.y = escalaSol;
 					sol.scale.z = escalaSol;
@@ -104,7 +237,7 @@
 				// MERCURIO
 				//textura
 				var textureMerc = new THREE.Texture();
-				loader.load( 'Texture/2mercurio.jpg', function ( image ) {
+				imageLoader.load( 'Texture/2mercurio.jpg', function ( image ) {
 					textureMerc.image = image;
 					textureMerc.needsUpdate = true;
 				} );
@@ -120,7 +253,7 @@
 				//venus
 				//textura
 				var textureVenus = new THREE.Texture();
-				loader.load( 'Texture/3venus.jpg', function ( image ) {
+				imageLoader.load( 'Texture/3venus.jpg', function ( image ) {
 					textureVenus.image = image;
 					textureVenus.needsUpdate = true;
 				} );
@@ -136,7 +269,7 @@
 				//TERRA
 				//textura
 				var textureTerra = new THREE.Texture();
-				loader.load( 'Texture/4terra.jpg', function ( image ) {
+				imageLoader.load( 'Texture/4terra.jpg', function ( image ) {
 					textureTerra.image = image;
 					textureTerra.needsUpdate = true;
 				} );
@@ -152,7 +285,7 @@
 				//MARTE
 				//textura
 				var textureMarte = new THREE.Texture();
-				loader.load( 'Texture/5marte.jpg', function ( image ) {
+				imageLoader.load( 'Texture/5marte.jpg', function ( image ) {
 					textureMarte.image = image;
 					textureMarte.needsUpdate = true;
 				} );
@@ -168,7 +301,7 @@
 				//JUPITER
 				//textura
 				var textureJupiter = new THREE.Texture();
-				loader.load( 'Texture/6jupiter.jpg', function ( image ) {
+				imageLoader.load( 'Texture/6jupiter.jpg', function ( image ) {
 					textureJupiter.image = image;
 					textureJupiter.needsUpdate = true;
 				} );
@@ -184,7 +317,7 @@
 				//SATURNO
 				//textura
 				var textureSat = new THREE.Texture();
-				loader.load( 'Texture/7saturno.jpg', function ( image ) {
+				imageLoader.load( 'Texture/7saturno.jpg', function ( image ) {
 					textureSat.image = image;
 					textureSat.needsUpdate = true;
 				} );
@@ -200,7 +333,7 @@
 				//URANO
 				//textura
 				var textureUrano = new THREE.Texture();
-				loader.load( 'Texture/8urano.jpg', function ( image ) {
+				imageLoader.load( 'Texture/8urano.jpg', function ( image ) {
 					textureUrano.image = image;
 					textureUrano.needsUpdate = true;
 				} );
@@ -216,10 +349,11 @@
 				//NETUNO
 				//textura
 				var textureNet = new THREE.Texture();
-				loader.load( 'Texture/9netuno.jpg', function ( image ) {
+				imageLoader.load( 'Texture/9netuno.jpg', function ( image ) {
 					textureNet.image = image;
 					textureNet.needsUpdate = true;
 				} );
+
 				// objeto
 				var materialNet = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
 				netuno = new THREE.Mesh( esfera, materialNet );
@@ -227,8 +361,30 @@
 					netuno.scale.x = escalaNet;
 					netuno.scale.y = escalaNet;
 					netuno.scale.z = escalaNet;
-				scene.add( netuno );				
+				scene.add( netuno );
 				
+				//SATELITE
+				//textura
+				// ...
+
+				//objeto
+				// ...
+				//satelite.scale.x = escalaStl;
+				//satelite.scale.y = escalaStl;
+				//satelite.scale.z = escalaStl;
+				//scene.add( satelite );
+
+				//METEORO
+				//textura
+
+				// objeto
+				//meteoro.scale.x = escalaMet;
+				//meteoro.scale.y = escalaMet;
+				//meteoro.scale.z = escalaMet;
+				//scene.add( meteoro );
+
+
+				//renderizador
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
@@ -245,7 +401,9 @@
 				camera.lookAt( scene.position );
 				renderer.render( scene, camera );
 				var timer = new Date().getTime() / 4000;
-
+				var delta = clock.getDelta();
+				customUniforms.time.value += delta;
+				
 				//Rotações
 				mercurio.rotation.y = rotacaoMerc*timer;
 				venus.rotation.y = rotacaoVenus*timer;
@@ -255,6 +413,13 @@
 				saturno.rotation.y = rotacaoSat*timer;
 				urano.rotation.x = rotacaoUrano*timer;
 				netuno.rotation.y = rotacaoNet*timer;
+
+				//movimento articulado (translação do satélite)
+				//DESCOMENTAR QUANDO TIVER O SATELITE PRONTO
+				//satelite.position.x = Math.floor(Math.cos( timer * 15 ) * 150 ) + terra.position.x;
+				//satelite.position.z = Math.floor(Math.sin( timer * 15 ) * 150 ) + terra.position.z;
+				//satelite.position.y = satelite.position.x - terra.position.x + terra.position.y;
+
 
 				//translações
 				if (flag == 1){
@@ -279,19 +444,28 @@
 			}
 
 			function onDocumentMouseMove( event ) {
-				//obj1.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0).makeRotationX(Math.PI/20));
-				//obj3.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI/10));
 			}
+
 			function onDocumentMouseClick( event ) {
 				flag = 1;
-				if (camera.position.z == 6000){
+				
+				if (cliques == 0)
+				{
 					camera.position.z = 0;
 					camera.position.y = 6000;
 				}
-				else {
+				else if (cliques == 1)
+				{
 					camera.position.y = 0;
 					camera.position.z = 6000;
 				}
+				else
+				{
+					camera.position.z = 3000;
+					camera.position.y = 0;
+					cliques = -1;
+				}
+				cliques++;
 			}
 		</script>
 	</body>
