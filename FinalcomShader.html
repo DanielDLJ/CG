@@ -390,6 +390,14 @@
 					netuno.scale.z = escalaNet;
 				scene.add( netuno );
 				
+				//ANEL DE SATURNO
+				var geo = new THREE.RingBufferGeometry( 200, 160, 300 );
+				var mat = new THREE.MeshBasicMaterial( { color: 0xffffff, side: THREE.DoubleSide } );
+				var anel = new THREE.Mesh( geo, mat );
+				anel.position.x = saturno.position.x;
+				anel.position.y=saturno.position.y;
+				anel.position.z = saturno.position.z;
+				scene.add( anel );				
 				
 				//SATÉLITE
 				//textura
