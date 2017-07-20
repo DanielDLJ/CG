@@ -233,6 +233,29 @@
 					textureSol.image = image;
 					textureSol.needsUpdate = true;
 				} );
+				
+				<!-- ---------------- Arrumar ------------------------ -->
+				var curve = new THREE.CubicBezierCurve3(
+				new THREE.Vector3( -10, 0, 0 ),
+				new THREE.Vector3( -5, 15, 0 ),
+				new THREE.Vector3( 20, 15, 0 ),
+				new THREE.Vector3( 10, 0, 0 )
+				);
+
+				var geometry = new THREE.Geometry();
+				geometry.vertices = curve.getPoints( 50 );
+
+				var material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
+
+				// Create the final object to add to the scene
+				var curveObject = new THREE.Line( geometry, customMaterial );
+				curveObject.scale.x = 21;
+	                        curveObject.scale.y = 21;
+	                        curveObject.scale.z = 21;
+				scene.add( curveObject );
+				
+				<!-- ---------------- Arrumar ------------------------ -->
+				
 				// objeto
 				var materialSol = new THREE.MeshBasicMaterial( { color: 0xffffff, map: textureSol } );
 				var sol = new THREE.Mesh( esfera, customMaterial );
