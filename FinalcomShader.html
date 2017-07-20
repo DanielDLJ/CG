@@ -108,7 +108,7 @@
 				cliques = 0;
 				dPlanetas = 300; //distancia base entre as orbitas
 
-				//tamanho dos planetas
+				//tamanho dos planetas, meteoro e satélite
 				escalaMerc = 1;
 				escalaVenus = 2,48;
 				escalaTerra = 2,62;
@@ -118,7 +118,8 @@
 				escalaUrano = 2,79;
 				escalaNet = 2,7;
 				escalaSol= 5;
-				//escalaStl = 4;
+				escalaStl = 2;
+				escalaMet = 10;
 
 				//rotações
 				rotacaoMerc = 1/58,65;
@@ -129,7 +130,7 @@
 				rotacaoSat = 10,23/24;
 				rotacaoUrano = 17,2/24;
 				rotacaoNet = 17,2/24;
-				//rotacaoStl = 5;
+				rotacaoStl = 5;
 
 				//translações
 				transMerc = 88/365;
@@ -140,7 +141,7 @@
 				transSat = 29 + 167/365;
 				transUrano = 87 + 7/365;
 				transNet = 164 + 280/365;
-				//transStl = 5;
+				transStl = 5;
 
 				//camera
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -234,27 +235,23 @@
 					textureSol.needsUpdate = true;
 				} );
 				
-				<!-- ---------------- Arrumar ------------------------ -->
+				//curva de bézier
 				var curve = new THREE.CubicBezierCurve3(
-				new THREE.Vector3( -10, 0, 0 ),
-				new THREE.Vector3( -5, 15, 0 ),
-				new THREE.Vector3( 20, 15, 0 ),
-				new THREE.Vector3( 10, 0, 0 )
+					new THREE.Vector3( 2000, 100, -2000),
+					new THREE.Vector3( -1000, 500, -2000 ),
+					new THREE.Vector3( -1000, 500, 0 ),
+					new THREE.Vector3( 0, 0, 0 )
 				);
 
 				var geometry = new THREE.Geometry();
 				geometry.vertices = curve.getPoints( 50 );
 
-				var material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
+				var material = new THREE.LineBasicMaterial( { color : 0xffffff} );
 
 				// Create the final object to add to the scene
-				var curveObject = new THREE.Line( geometry, customMaterial );
-				curveObject.scale.x = 21;
-	                        curveObject.scale.y = 21;
-	                        curveObject.scale.z = 21;
+				var curveObject = new THREE.Line( geometry, material );
 				scene.add( curveObject );
-				
-				<!-- ---------------- Arrumar ------------------------ -->
+
 				
 				// objeto
 				var materialSol = new THREE.MeshBasicMaterial( { color: 0xffffff, map: textureSol } );
@@ -392,34 +389,31 @@
 					netuno.scale.y = escalaNet;
 					netuno.scale.z = escalaNet;
 				scene.add( netuno );
-				/*
+				
+				
 				//SATÉLITE
 				//textura
 				var textureStl = new THREE.Texture();
-				loader.load( 'Texture/satelite.jpg', function ( image ) {
+				loader.load( 'Texture/panels.jpg', function ( image ) {
 					textureStl.image = image;
 					textureStl.needsUpdate = true;
 				} );
-
 				//objeto				
+				
 				var materialStl = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
 				var loaderOBJ = new THREE.OBJLoader( manager );
-				loaderOBJ.load( 'objetos/Grunt2.obj',
+				loaderOBJ.load( 'objetos/ComSat.obj',
 					function ( object ) {
-				    object.position.x = terra.position.x -100;
-				    object.position.y = terra.position.y +100;
-				    object.position.z = terra.position.z -100;
-					object.rotation.x = terra.rotation.x;
-					object.rotation.y = terra.position.y;
-					object.scale.x = 200;
-					object.scale.y = 200;
-					object.scale.z = 200;
+					object.scale.x = escalaStl;
+					object.scale.y = escalaStl;
+					object.scale.z = escalaStl;
 					satelite = object;
 					scene.add( satelite );
 				});
-				*/
 				
-				//METEORO
+
+				//meteoro
+
 				//textura
 				var textureMeteoro = new THREE.Texture();
 				loader.load( 'Texture/Meteor.jpg', function ( image ) {
@@ -434,12 +428,14 @@
 				    object.position.x = 2000;
 				    object.position.y = 100;
 				    object.position.z = -2000;
-					object.scale.x = 10;
-					object.scale.y = 10;
-					object.scale.z = 10;
+					object.scale.x = escalaMet;
+					object.scale.y = escalaMet;
+					object.scale.z = escalaMet;
 					meteoro = object;
-					scene.add( meteoro );
+
+				scene.add (meteoro);
 				});
+
 				
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -469,7 +465,13 @@
 				saturno.rotation.y = rotacaoSat*timer;
 				urano.rotation.x = rotacaoUrano*timer;
 				netuno.rotation.y = rotacaoNet*timer;
-				//satelite.rotation.y = rotacaoStl*timer;
+				satelite.rotation.y = rotacaoStl*timer;
+				
+				//movimento articulado (translação do satélite)
+				//DESCOMENTAR QUANDO TIVER O SATELITE PRONTO
+				satelite.position.x = Math.floor(Math.cos( timer * 15 ) * 150 ) + terra.position.x;
+				satelite.position.z = Math.floor(Math.sin( timer * 15 ) * 150 ) + terra.position.z;
+				satelite.position.y = satelite.position.x - terra.position.x + terra.position.y;
 
 				//translações
 				if (flag == 1){
@@ -490,8 +492,6 @@
 				urano.position.x = Math.floor(Math.sin( timer / transUrano ) * dPlanetas * 8 );
 				netuno.position.z = Math.floor(Math.cos( timer / transNet ) * dPlanetas * 9 );
 				netuno.position.x = Math.floor(Math.sin( timer / transNet ) * dPlanetas * 9 );
-				//satelite.position.z = Math.floor(Math.cos( timer / transStl ) * dPlanetas * 5 );
-				//satelite.position.x = Math.floor(Math.sin( timer / transStl ) * dPlanetas * 5 );
 				}
 			}
 
