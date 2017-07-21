@@ -548,7 +548,9 @@
 				//detecção de colisão a partir da distância entre o meteoro e a borda do sol
 				if (meteoro.position.x - sol.position.x<150 && meteoro.position.y - sol.position.y <150 && meteoro.position.z - sol.position.z <150 )
 				{
-					scene.remove(meteoro);
+					meteoro.position.x = 2000;
+					meteoro.position.y =100;
+					meteoro.position.z = -2000;
 				}
 			}
 
