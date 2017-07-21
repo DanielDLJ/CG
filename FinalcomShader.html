@@ -202,7 +202,7 @@
 				// Create the final object to add to the scene
 				curveObject = new THREE.Line( geometry, material );
 				curveObject.visible = false;
-				scene.add( curveObject );	
+				//scene.add( curveObject );	
 
 
 
@@ -466,7 +466,7 @@
 					textureMeteoro.needsUpdate = true;
 				} );
 				//objeto				
-				var materialMeteoro = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
+				var materialMeteoro = new THREE.MeshPhongMaterial( { color: 0x000000, map: textureNet } );
 				var loaderOBJmeteoro = new THREE.OBJLoader( manager );
 				loaderOBJmeteoro.load( 'objetos/meteor.obj',
 					function ( object ) {
