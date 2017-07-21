@@ -40,7 +40,7 @@
 					vec2 uvNoiseTimeShift = vUv + noiseScale * vec2( noiseGeneratorTimeShift.r, noiseGeneratorTimeShift.g );
 					// below, using uvTimeShift seems to result in more of a "rippling" effect
 					//   while uvNoiseTimeShift seems to result in more of a "shivering" effect
-					vec4 bumpData = texture2D( bumpTexture, uvTimeShift );
+					vec4 bumpData = texture2D( bumpTexture, uvNoiseTimeShift );
 
 					// move the position along the normal
 					//  but displace the vertices at the poles by the same amount
@@ -104,11 +104,11 @@
 
 				//variaveis
 				var esfera = new THREE.SphereGeometry( 40, 50, 50 );
-				flag = 0;
-				cliques = 0;
-				dPlanetas = 300; //distancia base entre as orbitas
+				clique = 10;
+				dPlanetas = 320; //distancia base entre as orbitas
+				cont = 0;
 
-				//tamanho dos planetas, meteoro e satélite
+				//tamanho dos planetas
 				escalaMerc = 1;
 				escalaVenus = 2,48;
 				escalaTerra = 2,62;
@@ -118,8 +118,8 @@
 				escalaUrano = 2,79;
 				escalaNet = 2,7;
 				escalaSol= 5;
-				escalaStl = 2;
-				escalaMet = 10;
+				escalaStl = 1;
+				escalaMet = 15;
 
 				//rotações
 				rotacaoMerc = 1/58,65;
@@ -130,7 +130,6 @@
 				rotacaoSat = 10,23/24;
 				rotacaoUrano = 17,2/24;
 				rotacaoNet = 17,2/24;
-				rotacaoStl = 5;
 
 				//translações
 				transMerc = 88/365;
@@ -141,7 +140,7 @@
 				transSat = 29 + 167/365;
 				transUrano = 87 + 7/365;
 				transNet = 164 + 280/365;
-				transStl = 5;
+				transStl = 1/3;
 
 				//camera
 				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
@@ -155,8 +154,8 @@
 				scene.add( ambient );
 
 				//luz
-				var luz = new THREE.PointLight();
-				luz.position.set( 100000, 100000, 100000 );
+				luz = new THREE.PointLight();
+				luz.position.set( 0, 0, 0 );
 				scene.add( luz );
 				
 				//Manager do loader
@@ -164,11 +163,11 @@
 				manager.onProgress = function ( item, loaded, total ) {
 					console.log( item, loaded, total );
 				};
-				//loader das imagens
-				var loader = new THREE.ImageLoader( manager );
+				//loaders
+				var imageLoader = new THREE.ImageLoader( manager );
+				var objLoader = new THREE.OBJLoader();
 
-				
-				
+				//fundo estrelado
 				var imagePrefix = "Texture/";
 				//var directions  = ["space", "space", "space", "space", "space", "space"];
 				var directions  = ["espaco", "espaco", "espaco", "espaco", "espaco", "espaco"];
@@ -186,6 +185,27 @@
 				var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
 				scene.add( skyBox );
 				
+
+				//curva de bézier
+				curve = new THREE.CubicBezierCurve3(
+					new THREE.Vector3( 2000, 100, -2000),
+					new THREE.Vector3( -1000, 500, -2000 ),
+					new THREE.Vector3( -1000, 500, 0 ),
+					new THREE.Vector3( 0, 0, 0 )
+				);
+
+				var geometry = new THREE.Geometry();
+				geometry.vertices = curve.getPoints( 50 );
+
+				var material = new THREE.LineBasicMaterial( { color : 0xffffff} );
+
+				// Create the final object to add to the scene
+				curveObject = new THREE.Line( geometry, material );
+				curveObject.visible = false;
+				scene.add( curveObject );	
+
+
+
 				// sol
 				//textura
 				
@@ -245,37 +265,10 @@
 					vertexShader:   document.getElementById( 'vertexShader'   ).textContent,
 					fragmentShader: document.getElementById( 'fragmentShader' ).textContent
 				}   );
-				
-				
-				
-				var textureSol = new THREE.Texture();
-				loader.load( 'Texture/1sol.jpg', function ( image ) {
-					textureSol.image = image;
-					textureSol.needsUpdate = true;
-				} );
-				
-				//curva de bézier
-				var curve = new THREE.CubicBezierCurve3(
-					new THREE.Vector3( 2000, 100, -2000),
-					new THREE.Vector3( -1000, 500, -2000 ),
-					new THREE.Vector3( -1000, 500, 0 ),
-					new THREE.Vector3( 0, 0, 0 )
-				);
-
-				var geometry = new THREE.Geometry();
-				geometry.vertices = curve.getPoints( 50 );
-
-				var material = new THREE.LineBasicMaterial( { color : 0xffffff} );
-
-				// Create the final object to add to the scene
-				var curveObject = new THREE.Line( geometry, material );
-				scene.add( curveObject );
-
-				
-				// objeto
-				var materialSol = new THREE.MeshBasicMaterial( { color: 0xffffff, map: textureSol } );
-				var sol = new THREE.Mesh( esfera, customMaterial );
-					sol.position.x = 0;
+								
+				//objeto
+				sol = new THREE.Mesh( esfera, customMaterial );
+					sol.rotation.y = 5.5;
 					sol.scale.x = escalaSol;
 					sol.scale.y = escalaSol;
 					sol.scale.z = escalaSol;
@@ -284,7 +277,7 @@
 				// MERCURIO
 				//textura
 				var textureMerc = new THREE.Texture();
-				loader.load( 'Texture/2mercurio.jpg', function ( image ) {
+				imageLoader.load( 'Texture/2mercurio.jpg', function ( image ) {
 					textureMerc.image = image;
 					textureMerc.needsUpdate = true;
 				} );
@@ -300,7 +293,7 @@
 				//venus
 				//textura
 				var textureVenus = new THREE.Texture();
-				loader.load( 'Texture/3venus.jpg', function ( image ) {
+				imageLoader.load( 'Texture/3venus.jpg', function ( image ) {
 					textureVenus.image = image;
 					textureVenus.needsUpdate = true;
 				} );
@@ -316,7 +309,7 @@
 				//TERRA
 				//textura
 				var textureTerra = new THREE.Texture();
-				loader.load( 'Texture/4terra.jpg', function ( image ) {
+				imageLoader.load( 'Texture/4terra.jpg', function ( image ) {
 					textureTerra.image = image;
 					textureTerra.needsUpdate = true;
 				} );
@@ -332,7 +325,7 @@
 				//MARTE
 				//textura
 				var textureMarte = new THREE.Texture();
-				loader.load( 'Texture/5marte.jpg', function ( image ) {
+				imageLoader.load( 'Texture/5marte.jpg', function ( image ) {
 					textureMarte.image = image;
 					textureMarte.needsUpdate = true;
 				} );
@@ -348,7 +341,7 @@
 				//JUPITER
 				//textura
 				var textureJupiter = new THREE.Texture();
-				loader.load( 'Texture/6jupiter.jpg', function ( image ) {
+				imageLoader.load( 'Texture/6jupiter.jpg', function ( image ) {
 					textureJupiter.image = image;
 					textureJupiter.needsUpdate = true;
 				} );
@@ -364,7 +357,7 @@
 				//SATURNO
 				//textura
 				var textureSat = new THREE.Texture();
-				loader.load( 'Texture/7saturno.jpg', function ( image ) {
+				imageLoader.load( 'Texture/7saturno.jpg', function ( image ) {
 					textureSat.image = image;
 					textureSat.needsUpdate = true;
 				} );
@@ -377,10 +370,42 @@
 					saturno.scale.z = escalaSat;
 				scene.add( saturno );
 
+				//ANEL DE SATURNO
+				//textura
+				var textureAnel = new THREE.Texture();
+				imageLoader.load( 'Texture/7anel.jpg', function ( image ) {
+					textureAnel.image = image;
+					textureAnel.needsUpdate = true;
+				} );
+				var materialAnel = new THREE.MeshBasicMaterial( { map: textureAnel, side: THREE.DoubleSide } );
+
+				//objeto
+				var forma = new THREE.RingBufferGeometry( 260, 150, 300, 5, 0, Math.PI * 2  );
+				var uvs = forma.attributes.uv.array;
+				var phiSegments = forma.parameters.phiSegments || 0;
+				var thetaSegments = forma.parameters.thetaSegments || 0;
+				phiSegments = phiSegments !== undefined ? Math.max( 1, phiSegments ) : 1;
+				thetaSegments = thetaSegments !== undefined ? Math.max( 3, thetaSegments ) : 8;
+				for ( var c = 0, j = 0; j <= phiSegments; j ++ ) {
+				    for ( var i = 0; i <= thetaSegments; i ++ ) {
+				        uvs[c++] = i / thetaSegments,
+				        uvs[c++] = j / phiSegments;
+				    }
+				}
+
+				anel = new THREE.Mesh( forma, materialAnel );
+				anel.position.x = saturno.position.x;
+				anel.position.y = saturno.position.y;
+				anel.position.z = saturno.position.z;
+				anel.rotation.x = THREE.Math.degToRad( 110 );
+				anel.rotation.y = THREE.Math.degToRad( 10 );
+
+				scene.add( anel );				
+
 				//URANO
 				//textura
 				var textureUrano = new THREE.Texture();
-				loader.load( 'Texture/8urano.jpg', function ( image ) {
+				imageLoader.load( 'Texture/8urano.jpg', function ( image ) {
 					textureUrano.image = image;
 					textureUrano.needsUpdate = true;
 				} );
@@ -396,10 +421,11 @@
 				//NETUNO
 				//textura
 				var textureNet = new THREE.Texture();
-				loader.load( 'Texture/9netuno.jpg', function ( image ) {
+				imageLoader.load( 'Texture/9netuno.jpg', function ( image ) {
 					textureNet.image = image;
 					textureNet.needsUpdate = true;
 				} );
+
 				// objeto
 				var materialNet = new THREE.MeshPhongMaterial( { color: 0xffffff, map: textureNet } );
 				netuno = new THREE.Mesh( esfera, materialNet );
@@ -409,19 +435,10 @@
 					netuno.scale.z = escalaNet;
 				scene.add( netuno );
 				
-				//ANEL DE SATURNO
-				var geo = new THREE.RingBufferGeometry( 200, 160, 300 );
-				var mat = new THREE.MeshBasicMaterial( { color: 0xffffff, side: THREE.DoubleSide } );
-				var anel = new THREE.Mesh( geo, mat );
-				anel.position.x = saturno.position.x;
-				anel.position.y=saturno.position.y;
-				anel.position.z = saturno.position.z;
-				scene.add( anel );				
-				
 				//SATÉLITE
 				//textura
 				var textureStl = new THREE.Texture();
-				loader.load( 'Texture/panels.jpg', function ( image ) {
+				imageLoader.load( 'Texture/panels.jpg', function ( image ) {
 					textureStl.image = image;
 					textureStl.needsUpdate = true;
 				} );
@@ -434,6 +451,7 @@
 					object.scale.x = escalaStl;
 					object.scale.y = escalaStl;
 					object.scale.z = escalaStl;
+					object.rotation.z = THREE.Math.degToRad( 90 );
 					satelite = object;
 					scene.add( satelite );
 				});
@@ -443,7 +461,7 @@
 
 				//textura
 				var textureMeteoro = new THREE.Texture();
-				loader.load( 'Texture/Meteor.jpg', function ( image ) {
+				imageLoader.load( 'Texture/Meteor.jpg', function ( image ) {
 					textureMeteoro.image = image;
 					textureMeteoro.needsUpdate = true;
 				} );
@@ -463,7 +481,7 @@
 				scene.add (meteoro);
 				});
 
-				
+				//renderizador
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
@@ -492,17 +510,14 @@
 				saturno.rotation.y = rotacaoSat*timer;
 				urano.rotation.x = rotacaoUrano*timer;
 				netuno.rotation.y = rotacaoNet*timer;
-				satelite.rotation.y = rotacaoStl*timer;
-				
+
 				//movimento articulado (translação do satélite)
-				//DESCOMENTAR QUANDO TIVER O SATELITE PRONTO
-				satelite.position.x = Math.floor(Math.cos( timer * 15 ) * 150 ) + terra.position.x;
-				satelite.position.z = Math.floor(Math.sin( timer * 15 ) * 150 ) + terra.position.z;
-				satelite.position.y = satelite.position.x - terra.position.x + terra.position.y;
+				satelite.position.x = Math.floor(Math.cos( timer * 7 ) * 150 ) + terra.position.x;
+				satelite.position.z = Math.floor(Math.sin( timer * 7 ) * 150 ) + terra.position.z;
+				satelite.position.y = satelite.position.z - terra.position.z;
 
 				//translações
-				if (flag == 1){
-				timer = new Date().getTime() * 0.0013;
+				if (clique > 9){
 				mercurio.position.z = Math.floor(Math.cos( timer / transMerc ) * dPlanetas * 2 );
 				mercurio.position.x = Math.floor(Math.sin( timer / transMerc ) * dPlanetas * 2 );
 				venus.position.z = Math.floor(Math.cos( timer / transVenus ) * dPlanetas * 3 );
@@ -515,37 +530,133 @@
 				jupiter.position.x = Math.floor(Math.sin( timer / transJupiter ) * dPlanetas * 6 );
 				saturno.position.z = Math.floor(Math.cos( timer / transSat ) * dPlanetas * 7 );
 				saturno.position.x = Math.floor(Math.sin( timer / transSat ) * dPlanetas * 7 );
+				anel.position.z = saturno.position.z;
+				anel.position.x = saturno.position.x;
 				urano.position.z = Math.floor(Math.cos( timer / transUrano ) * dPlanetas * 8 );
 				urano.position.x = Math.floor(Math.sin( timer / transUrano ) * dPlanetas * 8 );
 				netuno.position.z = Math.floor(Math.cos( timer / transNet ) * dPlanetas * 9 );
 				netuno.position.x = Math.floor(Math.sin( timer / transNet ) * dPlanetas * 9 );
+
+				//movimento na curva de bezier
+				meteoro.position.set(curve.getPoint( cont ).getComponent(0), curve.getPoint( cont ).getComponent(1), curve.getPoint( cont ).getComponent(2));
+				cont = cont + 0.001;
+				if(cont > 1)
+					cont = 0;
 				}
 			}
 
 			function onDocumentMouseMove( event ) {
-				//obj1.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0).makeRotationX(Math.PI/20));
-				//obj3.applyMatrix(new THREE.Matrix4().makeRotationY(Math.PI/10));
 			}
+
 			function onDocumentMouseClick( event ) {
-				flag = 1;
+				//primeiros cliques dã zoom nos planetas
+				if(clique == 0){
+					mercurio.position.set(0, 0, 0);
+					mercurio.visible = false;
+					venus.position.set(0, 0, 0);
+					venus.visible = false;
+					terra.position.set(0, 0, 0);
+					terra.visible = false;
+					satelite.visible = false;
+					marte.position.set(0, 0, 0);
+					marte.visible = false;
+					jupiter.position.set(0, 0, 0);
+					jupiter.visible = false;
+					anel.position.set(0, 0, 0);
+					anel.visible = false;
+					saturno.position.set(0, 0, 0);
+					saturno.visible = false;
+					urano.position.set(0, 0, 0);
+					urano.visible = false;
+					netuno.position.set(0, 0, 0);
+					netuno.visible = false;
+					meteoro.visible = false;
+					luz.position.set(0, 0, 750);				
+					camera.position.set(0, 0, 750);
+				}
+				if (clique == 2){
+					sol.visible = false;
+					mercurio.visible = true;
+				}
+
+				if (clique == 3){
+					mercurio.visible = false;
+					venus.visible = true;
+				}
+
+				if (clique == 4){
+					venus.visible = false;
+					terra.visible = true;
+					satelite.visible = true;
+				}
+
+				if (clique == 5){
+					terra.visible = false;
+					satelite.visible = false;
+					jupiter.visible = true;
+				}
+
+				if (clique == 6){
+					jupiter.visible = false;
+					saturno.visible = true;
+					anel.visible = true;
+					anel.rotation.x = THREE.Math.degToRad( 100 );
+					anel.rotation.y = THREE.Math.degToRad( 0 );
+				}
+
+				if (clique == 7){
+					saturno.visible = false;
+					anel.visible = false;
+					urano.visible = true;
+				}
+
+				if (clique == 8){
+					urano.visible = false;
+					netuno.visible = true;
+				}
 				
-				if (cliques == 0)
+				if (clique == 9){
+					netuno.visible = false;
+				}
+
+				//segundo clique: começa translação
+				if (clique == 10){
+					anel.rotation.x = THREE.Math.degToRad( 100 );					
+					luz.position.set( 0, 0, 0 );				
+					camera.position.y = 0;
+					camera.position.x = 0;
+					camera.position.z = 6000;
+					sol.visible = true;
+					mercurio.visible = true;
+					venus.visible = true;
+					terra.visible = true;
+					satelite.visible = true;
+					marte.visible = true;
+					jupiter.visible = true;
+					anel.visible = true;
+					saturno.visible = true;
+					urano.visible = true;
+					netuno.visible = true;
+					meteoro.visible = true;
+					curveObject.visible = false;
+				}
+				
+				//terceiro clique
+				if (clique == 11)
 				{
+					camera.position.z = 2500;
+					camera.position.y = 0;
+				}
+				//quarto clique
+				if (clique == 12)
+				{
+					anel.rotation.x = THREE.Math.degToRad( 90 );
 					camera.position.z = 0;
 					camera.position.y = 6000;
+					curveObject.visible = true;
+					clique = 9;
 				}
-				else if (cliques == 1)
-				{
-					camera.position.y = 0;
-					camera.position.z = 6000;
-				}
-				else
-				{
-					camera.position.z = 0;
-					camera.position.y = -750;
-					cliques = -1;
-				}
-				cliques++;
+				clique++;
 			}
 		</script>
 	</body>
